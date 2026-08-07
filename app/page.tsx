@@ -308,33 +308,6 @@ export default function Home() {
           onResetDemo={resetDemo}
         />
 
-        {/* Persona selector bar */}
-        <div className="flex shrink-0 gap-1.5 overflow-x-auto px-3 pb-1 pt-1">
-          <button
-            onClick={() => setSelectedId("me")}
-            className={`shrink-0 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-              selectedId === "me"
-                ? "border-signal bg-signal text-white"
-                : "border-edge bg-panel2 text-mute hover:border-mute hover:text-ink"
-            }`}
-          >
-            You
-          </button>
-          {personas.map((p) => (
-            <button
-              key={p.id}
-              onClick={() => setSelectedId(p.id)}
-              className={`shrink-0 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-                selectedId === p.id
-                  ? "border-signal bg-signal text-white"
-                  : "border-edge bg-panel2 text-mute hover:border-mute hover:text-ink"
-              }`}
-            >
-              {p.name}
-            </button>
-          ))}
-        </div>
-
         <main className="grid min-h-0 flex-1 grid-cols-[3fr_4fr_3fr] gap-3 p-3">
           <MatchDeck
             deck={deck}

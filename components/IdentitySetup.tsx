@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { appendBlock, payloadMessage } from "@/lib/chain";
 import { anchorHash, generateKeypair, shortKey, signMessage } from "@/lib/keys";
 import { initials } from "@/lib/ui";
@@ -39,7 +39,7 @@ const QUESTIONS = [
   },
 ] as const;
 
-type Step = "phone" | "minting" | "id" | "questions" | "profile";
+type Step = "phone" | "verify" | "minting" | "id" | "questions" | "profile";
 
 export default function IdentitySetup({
   chain,
@@ -50,6 +50,7 @@ export default function IdentitySetup({
 }) {
   const [step, setStep] = useState<Step>("phone");
   const [phone, setPhone] = useState("");
+  const [verified, setVerified] = useState(false);
   const [keys, setKeys] = useState<{ priv: string; pub: string } | null>(null);
   const [anchor, setAnchor] = useState<string | null>(null);
   const [nextChain, setNextChain] = useState<Block[] | null>(null);
@@ -62,10 +63,18 @@ export default function IdentitySetup({
   const phoneDigits = phone.replace(/\D/g, "");
   const phoneValid = phoneDigits.length >= 7;
 
+  const verifyToken = useMemo(() => {
+    if (!phoneValid) return "";
+    return shortKey(anchorHash(phone), 12).replace("\u2026", "");
+  }, [phone, phoneValid]);
+
+  const verifyHref = phoneValid
+    ? `https://vouch.app/verify?phone=${phoneDigits.slice(-4)}&t=${verifyToken}`
+    : "#";
+
   const mintIdentity = () => {
-    if (!phoneValid) return;
+    if (!phoneValid || !verified) return;
     setStep("minting");
-    // Brief beat so the chain write is visible as a moment
     window.setTimeout(() => {
       const kp = generateKeypair();
       const hashed = anchorHash(phone);
@@ -100,13 +109,15 @@ export default function IdentitySetup({
 
   const question = QUESTIONS[qIndex];
   const stepLabel =
-    step === "phone" || step === "minting"
-      ? "1 of 4"
-      : step === "id"
-        ? "2 of 4"
-        : step === "questions"
-          ? "3 of 4"
-          : "4 of 4";
+    step === "phone"
+      ? "1 of 5"
+      : step === "verify" || step === "minting"
+        ? "2 of 5"
+        : step === "id"
+          ? "3 of 5"
+          : step === "questions"
+            ? "4 of 5"
+            : "5 of 5";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-bg p-4">
@@ -129,7 +140,8 @@ export default function IdentitySetup({
                 Enter your phone number
               </h2>
               <p className="mt-1.5 text-sm leading-relaxed text-mute">
-                We derive a salted hash and write a unique identity block to the
+                We&apos;ll send a verification link. After you confirm, we
+                derive a salted hash and write a unique identity block to the
                 chain. Your number never leaves this device {"\u2014"} only the
                 hash does.
               </p>
@@ -139,12 +151,15 @@ export default function IdentitySetup({
               <input
                 autoFocus
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(e) => {
+                  setPhone(e.target.value);
+                  setVerified(false);
+                }}
                 placeholder="(555) 000-0000"
                 inputMode="tel"
                 className="mt-1 w-full rounded-lg border border-edge bg-panel2/60 px-3 py-2 text-sm outline-none placeholder:text-mute/60 focus:border-signal/50"
                 onKeyDown={(e) => {
-                  if (e.key === "Enter" && phoneValid) mintIdentity();
+                  if (e.key === "Enter" && phoneValid) setStep("verify");
                 }}
               />
               {phoneValid && (
@@ -157,11 +172,77 @@ export default function IdentitySetup({
               )}
               <button
                 disabled={!phoneValid}
-                onClick={mintIdentity}
+                onClick={() => setStep("verify")}
                 className="blue-gradient mt-5 w-full rounded-full py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
               >
                 Continue
               </button>
+            </>
+          )}
+
+          {step === "verify" && (
+            <>
+              <h2 className="mt-1 font-display text-xl font-semibold italic">
+                Verify your phone
+              </h2>
+              <p className="mt-1.5 text-sm leading-relaxed text-mute">
+                A verification link was sent to{" "}
+                <span className="text-ink">
+                  {"\u2022".repeat(Math.max(0, phoneDigits.length - 4))}
+                  {phoneDigits.slice(-4)}
+                </span>
+                . Open it to prove this number is yours, then we mint your
+                identity on the chain.
+              </p>
+
+              <div className="mt-4 rounded-xl border border-edge bg-panel2/50 p-3">
+                <p className="text-[10px] uppercase tracking-widest text-mute">
+                  Verification link
+                </p>
+                <a
+                  href={verifyHref}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setVerified(true);
+                  }}
+                  className="mt-1.5 block break-all font-mono text-[12px] font-medium text-signal underline-offset-2 hover:underline"
+                >
+                  {verifyHref}
+                </a>
+                <p className="mt-2 text-[10px] leading-relaxed text-mute">
+                  Demo stub {"\u2014"} click the link to verify. No SMS is sent.
+                </p>
+              </div>
+
+              {verified ? (
+                <p className="mt-3 text-sm font-medium text-signal">
+                  Phone verified. Ready to write your identity block.
+                </p>
+              ) : (
+                <p className="mt-3 text-sm text-mute">
+                  Waiting for you to open the verification link{"\u2026"}
+                </p>
+              )}
+
+              <div className="mt-5 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setVerified(false);
+                    setStep("phone");
+                  }}
+                  className="rounded-full border border-edge bg-panel px-4 py-2.5 text-sm text-mute shadow-sm hover:text-ink"
+                >
+                  Back
+                </button>
+                <button
+                  disabled={!verified}
+                  onClick={mintIdentity}
+                  className="blue-gradient flex-1 rounded-full py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
+                >
+                  Continue
+                </button>
+              </div>
             </>
           )}
 
@@ -171,7 +252,7 @@ export default function IdentitySetup({
                 Writing your identity to the chain{"\u2026"}
               </p>
               <p className="mt-2 text-xs text-mute">
-                Keypair + phone anchor {"\u2192"} unique block
+                Verified phone + keypair {"\u2192"} unique block
               </p>
             </div>
           )}
@@ -189,6 +270,7 @@ export default function IdentitySetup({
                 <Row label="Block" value={`#${blockIndex}`} />
                 <Row label="Public key" value={shortKey(keys.pub, 20)} mono />
                 <Row label="Anchor" value={shortKey(anchor, 20)} mono />
+                <Row label="Phone" value="verified" />
               </div>
               <button
                 onClick={() => setStep("questions")}
@@ -251,7 +333,7 @@ export default function IdentitySetup({
               </h2>
               <p className="mt-1.5 text-sm text-mute">
                 Then you land on Match, Profile, and Chain {"\u2014"} with your
-                new identity block already in the ledger.
+                verified identity block already in the ledger.
               </p>
               <label className="mt-4 block text-[10px] uppercase tracking-widest text-mute">
                 Display name
