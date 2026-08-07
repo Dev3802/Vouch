@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #ece9e2;
+  --color-panel: #fbfaf7;
+  --color-panel2: #f2efe8;
+  --color-edge: #e0dcd1;
+  --color-ink: #23211c;
+  --color-mute: #8b8577;
+  --color-signal: #3a5bc7;
+  --color-signal2: #7c99ea;
+  --color-danger: #b8432e;
+  --color-warn: #a17b24;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+}
+
+html,
+body {
+  color: var(--color-ink);
+  background-color: var(--color-bg);
+  /* hint of blue at the top, settling into warm cream */
+  background-image: linear-gradient(
+    180deg,
+    #e3e7f2 0%,
+    #eae9e6 220px,
+    #ece9e2 420px
+  );
+  background-repeat: no-repeat;
+  font-family: var(--font-sans);
+}
+
+::selection {
+  background: rgba(58, 91, 199, 0.18);
+}
+
+@keyframes vouch-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.vouch-pop {
+  animation: vouch-pop 0.25s ease-out both;
+}
+
+@keyframes vouch-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+.vouch-pulse {
+  animation: vouch-pulse 1.2s ease-in-out infinite;
+}
+
+.blue-gradient {
+  background-image: linear-gradient(135deg, #4d6fdd 0%, #2c49a8 100%);
+}
+
+/* Override @solana/wallet-adapter-react-ui button to match UX palette */
+.wallet-btn-wrapper .wallet-adapter-button {
+  background: var(--color-panel) !important;
+  border: 1px solid var(--color-edge) !important;
+  border-radius: 9999px !important;
+  color: var(--color-mute) !important;
+  font-family: var(--font-sans) !important;
+  font-size: 0.75rem !important;
+  font-weight: 500 !important;
+  height: auto !important;
+  padding: 0.375rem 0.75rem !important;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05) !important;
+  transition: border-color 0.15s, color 0.15s !important;
+  line-height: 1.25 !important;
+}
+
+.wallet-btn-wrapper .wallet-adapter-button:hover {
+  border-color: rgb(58 91 199 / 0.3) !important;
+  color: var(--color-signal) !important;
+  background: var(--color-panel) !important;
+}
+
+.wallet-btn-wrapper .wallet-adapter-button-start-icon {
+  width: 16px !important;
+  height: 16px !important;
+  margin-right: 6px !important;
+}
