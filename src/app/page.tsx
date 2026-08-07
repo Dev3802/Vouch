@@ -14,7 +14,9 @@ import { Attestation, DateObj, Block } from '@/lib/types';
 
 export default function Home() {
   const { publicKey } = useWallet();
-  const currentUserKey = publicKey?.toBase58() || PERSONAS[0].pubkey;
+  const [demoPersonaIndex, setDemoPersonaIndex] = useState(0);
+  const demoPersona = PERSONAS[demoPersonaIndex];
+  const currentUserKey = publicKey?.toBase58() || demoPersona.pubkey;
 
   const [personaChains, setPersonaChains] = useState<Record<string, Block[]>>(
     () => Object.fromEntries(PERSONAS.map(p => [p.pubkey, p.chain]))
@@ -49,7 +51,24 @@ export default function Home() {
           <h1 className="text-2xl font-bold">Vouch<span className="ml-3 px-2 py-0.5 rounded text-xs bg-purple-500/20 text-purple-400 font-mono">solana devnet</span></h1>
           <p className="text-sm text-zinc-500">Dating reputation you can&apos;t reset</p>
         </div>
-        <WalletConnect />
+        <div className="flex items-center gap-4">
+          {!publicKey && (
+            <div className="flex items-center gap-2 bg-zinc-800 rounded-lg px-3 py-1.5">
+              <span className="text-xs text-zinc-500">Demo as:</span>
+              <select
+                value={demoPersonaIndex}
+                onChange={(e) => setDemoPersonaIndex(Number(e.target.value))}
+                className="bg-zinc-700 text-sm text-zinc-200 rounded px-2 py-0.5 border-none outline-none cursor-pointer"
+              >
+                {PERSONAS.map((p, i) => (
+                  <option key={p.pubkey} value={i}>{p.name}</option>
+                ))}
+              </select>
+              <span className="text-xs text-zinc-600 font-mono">{demoPersona.pubkey.slice(0, 4)}...{demoPersona.pubkey.slice(-4)}</span>
+            </div>
+          )}
+          <WalletConnect />
+        </div>
       </header>
 
       <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
