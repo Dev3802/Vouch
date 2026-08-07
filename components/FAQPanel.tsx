@@ -54,36 +54,56 @@ const FAQ_ITEMS = [
 ];
 
 export default function FAQPanel() {
+  const [expanded, setExpanded] = useState(false);
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <section className="mx-auto mt-8 max-w-4xl rounded-2xl border border-edge bg-panel p-6 shadow-sm">
-      <h2 className="font-display text-xl font-semibold italic">
-        Hard questions, honest answers<span className="text-signal">.</span>
-      </h2>
-      <p className="mt-1 text-sm text-mute">
-        We ran the concept through adversarial review before building it.
-      </p>
-      <div className="mt-4 space-y-1">
-        {FAQ_ITEMS.map((item, i) => (
-          <div key={i} className="overflow-hidden rounded-xl border border-edge">
-            <button
-              onClick={() => setOpenIndex(openIndex === i ? null : i)}
-              className="flex w-full items-center justify-between p-3 text-left transition-colors hover:bg-panel2/50"
+    <section className="mx-auto max-w-4xl rounded-2xl border border-edge bg-panel p-4 shadow-sm sm:p-6">
+      <button
+        type="button"
+        onClick={() => setExpanded((v) => !v)}
+        className="flex w-full items-start justify-between gap-3 text-left"
+      >
+        <div>
+          <h2 className="font-display text-xl font-semibold italic">
+            Hard questions, honest answers
+            <span className="text-signal">.</span>
+          </h2>
+          <p className="mt-1 text-sm text-mute">
+            Adversarial review notes for judges. Does not block the demo above.
+          </p>
+        </div>
+        <span className="mt-1 shrink-0 rounded-full border border-edge px-3 py-1 text-xs text-mute">
+          {expanded ? "Hide" : "Show"}
+        </span>
+      </button>
+
+      {expanded && (
+        <div className="mt-4 space-y-1">
+          {FAQ_ITEMS.map((item, i) => (
+            <div
+              key={i}
+              className="overflow-hidden rounded-xl border border-edge"
             >
-              <span className="pr-4 text-sm font-medium">{item.q}</span>
-              <span className="shrink-0 text-lg text-signal">
-                {openIndex === i ? "\u2212" : "+"}
-              </span>
-            </button>
-            {openIndex === i && (
-              <div className="vouch-pop px-3 pb-3">
-                <p className="text-sm leading-relaxed text-mute">{item.a}</p>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
+              <button
+                type="button"
+                onClick={() => setOpenIndex(openIndex === i ? null : i)}
+                className="flex w-full items-center justify-between p-3 text-left transition-colors hover:bg-panel2/50"
+              >
+                <span className="pr-4 text-sm font-medium">{item.q}</span>
+                <span className="shrink-0 text-lg text-signal">
+                  {openIndex === i ? "\u2212" : "+"}
+                </span>
+              </button>
+              {openIndex === i && (
+                <div className="vouch-pop px-3 pb-3">
+                  <p className="text-sm leading-relaxed text-mute">{item.a}</p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </section>
   );
 }

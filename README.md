@@ -13,6 +13,10 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
+You land on the match / profile / chain layout immediately (demo identity is created for you). Use **Start fresh** to walk the onboarding flow — phone step has **Continue** or **Skip for demo**, then name → **Enter Vouch**. FAQ questions sit collapsed below the fold and do not block the deck.
+
+Design tokens, screenshots, and agent-facing UI notes: [`ux/`](ux/).
+
 ## What's inside
 
 - **Identity** — the browser generates a secp256k1 keypair on first load. That is the account. No email, no password. Keys are issued one per sybil-resistant anchor — a salted phone hash in v1 (verification stubbed in the demo) — so deleting a key does not buy a free fresh start.

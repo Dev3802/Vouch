@@ -40,6 +40,7 @@ export default function Home() {
   const [selectedId, setSelectedId] = useState<string>("p0"); // start on Marcus for the demo
   const [attesting, setAttesting] = useState<DateObj | null>(null);
   const [confirmReset, setConfirmReset] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [highlightBlock, setHighlightBlock] = useState<number | null>(null);
   // last known-good chain; tampering only ever mutates React state, never this
@@ -214,6 +215,7 @@ export default function Home() {
     setDates([]);
     setSwiped(new Set());
     setSelectedId("p0");
+    setShowOnboarding(true);
   };
 
   const resetDemo = () => {
@@ -240,9 +242,10 @@ export default function Home() {
     setTimeout(() => setHighlightBlock(null), 2000);
   };
 
-  // Auto-create demo identity if none exists -- skip onboarding gate
+  // Auto-create a demo identity on first load so the match deck is immediate.
+  // "Start fresh" sets showOnboarding and uses IdentitySetup instead.
   useEffect(() => {
-    if (ready && !identity) {
+    if (ready && !identity && !showOnboarding) {
       const kp = generateKeypair();
       const demoId: Identity = {
         name: "Demo User",
@@ -253,11 +256,38 @@ export default function Home() {
       setIdentity(demoId);
       try {
         localStorage.setItem(LS_IDENTITY, JSON.stringify(demoId));
-      } catch {}
+      } catch {
+        // ignore
+      }
     }
-  }, [ready, identity]);
+  }, [ready, identity, showOnboarding]);
 
-  if (!ready || !identity) {
+  if (!ready) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <p className="vouch-pulse font-mono text-sm text-mute">
+          Loading chain{"\u2026"}
+        </p>
+      </div>
+    );
+  }
+
+  if (showOnboarding || !identity) {
+    if (showOnboarding) {
+      return (
+        <IdentitySetup
+          onCreate={(id) => {
+            setIdentity(id);
+            setShowOnboarding(false);
+            try {
+              localStorage.setItem(LS_IDENTITY, JSON.stringify(id));
+            } catch {
+              // ignore
+            }
+          }}
+        />
+      );
+    }
     return (
       <div className="flex h-screen items-center justify-center">
         <p className="vouch-pulse font-mono text-sm text-mute">
@@ -292,70 +322,73 @@ export default function Home() {
         };
 
   return (
-    <div className="flex h-screen flex-col">
-      <TopBar
-        identity={identity}
-        chain={chain}
-        onShowMe={() => setSelectedId("me")}
-        onResetIdentity={() => setConfirmReset(true)}
-        onResetDemo={resetDemo}
-      />
+    <div className="min-h-screen">
+      {/* First viewport: match / profile / chain — FAQ stays below so it cannot crush the deck */}
+      <div className="flex h-screen flex-col">
+        <TopBar
+          identity={identity}
+          chain={chain}
+          onShowMe={() => setSelectedId("me")}
+          onResetIdentity={() => setConfirmReset(true)}
+          onResetDemo={resetDemo}
+        />
 
-      {/* Persona selector bar */}
-      <div className="flex gap-1.5 overflow-x-auto px-3 pb-1 pt-1">
-        <button
-          onClick={() => setSelectedId("me")}
-          className={`shrink-0 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-            selectedId === "me"
-              ? "border-signal bg-signal text-white"
-              : "border-edge bg-panel2 text-mute hover:border-mute hover:text-ink"
-          }`}
-        >
-          You
-        </button>
-        {personas.map((p) => (
+        {/* Persona selector bar */}
+        <div className="flex shrink-0 gap-1.5 overflow-x-auto px-3 pb-1 pt-1">
           <button
-            key={p.id}
-            onClick={() => setSelectedId(p.id)}
+            onClick={() => setSelectedId("me")}
             className={`shrink-0 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-              selectedId === p.id
+              selectedId === "me"
                 ? "border-signal bg-signal text-white"
                 : "border-edge bg-panel2 text-mute hover:border-mute hover:text-ink"
             }`}
           >
-            {p.name}
+            You
           </button>
-        ))}
+          {personas.map((p) => (
+            <button
+              key={p.id}
+              onClick={() => setSelectedId(p.id)}
+              className={`shrink-0 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                selectedId === p.id
+                  ? "border-signal bg-signal text-white"
+                  : "border-edge bg-panel2 text-mute hover:border-mute hover:text-ink"
+              }`}
+            >
+              {p.name}
+            </button>
+          ))}
+        </div>
+
+        <main className="grid min-h-0 flex-1 grid-cols-[3fr_4fr_3fr] gap-3 p-3">
+          <MatchDeck
+            deck={deck}
+            dates={dates}
+            personasById={personasById}
+            chain={chain}
+            onLike={handleLike}
+            onPass={handlePass}
+            onSelect={(p) => setSelectedId(p.id)}
+            onAdvance={handleAdvance}
+            onAttest={(d) => setAttesting(d)}
+          />
+          <ProfilePanel
+            subject={selected}
+            chain={chain}
+            nameForKey={nameForKey}
+            onClickBlock={handleClickBlock}
+          />
+          <ChainLedger
+            chain={chain}
+            nameForKey={nameForKey}
+            onTamper={handleTamper}
+            onReset={handleReset}
+            highlightIndex={highlightBlock}
+          />
+        </main>
       </div>
 
-      <main className="grid min-h-0 flex-1 grid-cols-[3fr_4fr_3fr] gap-3 p-3">
-        <MatchDeck
-          deck={deck}
-          dates={dates}
-          personasById={personasById}
-          chain={chain}
-          onLike={handleLike}
-          onPass={handlePass}
-          onSelect={(p) => setSelectedId(p.id)}
-          onAdvance={handleAdvance}
-          onAttest={(d) => setAttesting(d)}
-        />
-        <ProfilePanel
-          subject={selected}
-          chain={chain}
-          nameForKey={nameForKey}
-          onClickBlock={handleClickBlock}
-        />
-        <ChainLedger
-          chain={chain}
-          nameForKey={nameForKey}
-          onTamper={handleTamper}
-          onReset={handleReset}
-          highlightIndex={highlightBlock}
-        />
-      </main>
-
-      <div className="overflow-y-auto px-3 pb-6">
+      <div className="px-3 pb-8 pt-2">
         <FAQPanel />
       </div>
 

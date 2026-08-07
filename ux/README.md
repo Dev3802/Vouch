@@ -2,7 +2,9 @@
 
 This folder is the single source of truth for the Vouch UI. It is written so an AI agent (Claude, Cursor, etc.) or a new contributor can pick it up and extend the interface without guessing.
 
-Read alongside the product brief (PRD) and risk register. The app itself lives in `app/`, `components/`, and `lib/`.
+Read alongside the product brief (PRD) and risk register in `docs/`.
+
+**The runnable UI lives at the repo root** (`app/`, `components/`, `lib/`). This `ux/` folder holds the design spec, style reference, and screenshots so Claude (or any agent) can restyle or extend the product without guessing.
 
 ## Product in one paragraph
 
@@ -61,10 +63,14 @@ Screenshots in `screenshots/`: `main-layout.jpg`, `vouch-pill-card.jpg`, `profil
 ## User flows
 
 ### Onboarding (`components/IdentitySetup.tsx`)
-1. "Generating your keypair…" moment (~1.5s). Copy: no email, no password, the key is the account.
-2. **Phone number question** — derives a salted-hash sybil anchor live as the user types. Copy must state: one key per person, only the hash is kept, the number never leaves the device, verification is stubbed in this demo. (Risk register: fixed in scope.)
-3. Display name + profile color (gradient swatch shows live initials preview).
-4. "Enter Vouch" (blue gradient pill). New accounts start with zero vouches by design.
+Shown via **Start fresh** (first load auto-enters a demo identity so the match deck is immediate).
+1. "Generating your keypair…" moment (~1.5s).
+2. **Step 1 — Phone** with primary **Continue** (7+ digits) and **Skip for demo**. Never leave the user with no path forward.
+3. **Step 2 — Profile**: display name + color, then **Enter Vouch**.
+4. New accounts start with zero vouches by design.
+
+### Layout rule
+The three-panel Match / Profile / Chain view owns the first viewport (`h-screen`). FAQ ("Hard questions") is collapsed by default and lives **below** that viewport so it cannot crush the swipe deck.
 
 ### Match → date → attestation
 1. Like on the card always matches (demo behavior) and creates a date in `proposed`.
