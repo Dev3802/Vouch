@@ -6,6 +6,7 @@ import { WalletConnect } from '@/components/WalletConnect';
 import { ProfilePanel } from '@/components/ProfilePanel';
 import { MatchPanel } from '@/components/MatchPanel';
 import { AttestationModal } from '@/components/AttestationModal';
+import { ChainPanel } from '@/components/ChainPanel';
 import { PERSONAS, getPersona } from '@/lib/seed';
 import { appendBlock } from '@/lib/chain';
 import { Attestation, DateObj, Block } from '@/lib/types';
@@ -85,10 +86,12 @@ export default function Home() {
           />
         </div>
 
-        {/* Right: Chain panel placeholder */}
-        <div className="bg-zinc-900 rounded-2xl p-6 border border-zinc-800">
-          <h2 className="text-lg font-semibold mb-4">Chain</h2>
-          <p className="text-zinc-500 text-sm">Chain panel coming next.</p>
+        {/* Right: Chain ledger panel */}
+        <div>
+          <ChainPanel
+            chain={getChainForPersona(selectedPersona.pubkey)}
+            personaName={selectedPersona.name}
+          />
         </div>
       </div>
 
