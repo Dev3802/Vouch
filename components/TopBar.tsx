@@ -41,6 +41,9 @@ export default function TopBar({
         <p className="hidden text-xs text-mute sm:block">
           Dating reputation you can&apos;t reset.
         </p>
+        <span className="hidden rounded-full border border-signal/25 bg-signal/10 px-2 py-0.5 text-[10px] font-mono text-signal sm:inline">
+          solana devnet
+        </span>
       </div>
       <div className="flex items-center gap-2">
         <button
@@ -62,12 +65,6 @@ export default function TopBar({
         <div className="wallet-btn-wrapper">
           <WalletMultiButton />
         </div>
-
-        {connected && (
-          <span className="rounded-full border border-signal/25 bg-signal/10 px-2.5 py-0.5 font-mono text-[10px] text-signal">
-            solana devnet
-          </span>
-        )}
 
         <button
           onClick={onShowMe}

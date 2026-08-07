@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { verifyChain } from "@/lib/chain";
 import { shortKey } from "@/lib/keys";
 import { ATTESTATION_LABELS } from "@/lib/score";
@@ -34,7 +34,7 @@ export default function ChainLedger({
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Scroll to the highlighted block whenever highlightIndex changes
-  useMemo(() => {
+  useEffect(() => {
     if (highlightIndex == null || !scrollRef.current) return;
     const el = scrollRef.current.querySelector(
       `[data-block-index="${highlightIndex}"]`
@@ -42,7 +42,6 @@ export default function ChainLedger({
     if (el) {
       el.scrollIntoView({ behavior: "smooth", block: "center" });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [highlightIndex]);
 
   return (
