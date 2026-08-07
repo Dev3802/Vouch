@@ -240,7 +240,7 @@ export default function Home() {
     setTimeout(() => setHighlightBlock(null), 2000);
   };
 
-  if (!ready) {
+  if (!ready || !identity) {
     return (
       <div className="flex h-screen items-center justify-center">
         <p className="vouch-pulse font-mono text-sm text-mute">
@@ -250,20 +250,23 @@ export default function Home() {
     );
   }
 
-  if (!identity) {
-    return (
-      <IdentitySetup
-        onCreate={(id) => {
-          setIdentity(id);
-          try {
-            localStorage.setItem(LS_IDENTITY, JSON.stringify(id));
-          } catch {
-            // ignore
-          }
-        }}
-      />
-    );
-  }
+  // Auto-create demo identity if none exists -- skip onboarding gate
+  useEffect(() => {
+    if (ready && !identity) {
+      const { generateKeypair } = require("@/lib/keys");
+      const kp = generateKeypair();
+      const demoId: Identity = {
+        name: "Demo User",
+        gradient: "from-blue-400 to-indigo-600",
+        pub: kp.pub,
+        priv: kp.priv,
+      };
+      setIdentity(demoId);
+      try {
+        localStorage.setItem(LS_IDENTITY, JSON.stringify(demoId));
+      } catch {}
+    }
+  }, [ready, identity]);
 
   const selected: ProfileSubject =
     selectedId === "me"
@@ -298,6 +301,33 @@ export default function Home() {
         onResetIdentity={() => setConfirmReset(true)}
         onResetDemo={resetDemo}
       />
+
+      {/* Persona selector bar */}
+      <div className="flex gap-1.5 overflow-x-auto px-3 pb-1 pt-1">
+        <button
+          onClick={() => setSelectedId("me")}
+          className={`shrink-0 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+            selectedId === "me"
+              ? "border-signal bg-signal text-white"
+              : "border-edge bg-panel2 text-mute hover:border-mute hover:text-ink"
+          }`}
+        >
+          You
+        </button>
+        {personas.map((p) => (
+          <button
+            key={p.id}
+            onClick={() => setSelectedId(p.id)}
+            className={`shrink-0 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+              selectedId === p.id
+                ? "border-signal bg-signal text-white"
+                : "border-edge bg-panel2 text-mute hover:border-mute hover:text-ink"
+            }`}
+          >
+            {p.name}
+          </button>
+        ))}
+      </div>
 
       <main className="grid min-h-0 flex-1 grid-cols-[3fr_4fr_3fr] gap-3 p-3">
         <MatchDeck
