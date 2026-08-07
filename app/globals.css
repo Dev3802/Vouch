@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #ece9e2;
+  --color-panel: #fbfaf7;
+  --color-panel2: #f2efe8;
+  --color-edge: #e0dcd1;
+  --color-ink: #23211c;
+  --color-mute: #8b8577;
+  --color-signal: #3a5bc7;
+  --color-signal2: #7c99ea;
+  --color-danger: #b8432e;
+  --color-warn: #a17b24;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+}
+
+html,
+body {
+  color: var(--color-ink);
+  background-color: var(--color-bg);
+  /* hint of blue at the top, settling into warm cream */
+  background-image: linear-gradient(
+    180deg,
+    #e3e7f2 0%,
+    #eae9e6 220px,
+    #ece9e2 420px
+  );
+  background-repeat: no-repeat;
+  font-family: var(--font-sans);
+}
+
+::selection {
+  background: rgba(58, 91, 199, 0.18);
+}
+
+@keyframes vouch-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.vouch-pop {
+  animation: vouch-pop 0.25s ease-out both;
+}
+
+@keyframes vouch-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+.vouch-pulse {
+  animation: vouch-pulse 1.2s ease-in-out infinite;
+}
+
+.blue-gradient {
+  background-image: linear-gradient(135deg, #4d6fdd 0%, #2c49a8 100%);
+}
