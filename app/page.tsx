@@ -10,7 +10,7 @@ import MatchDeck from "@/components/MatchDeck";
 import ProfilePanel, { type ProfileSubject } from "@/components/ProfilePanel";
 import TopBar from "@/components/TopBar";
 import { appendBlock, payloadMessage } from "@/lib/chain";
-import { anchorHash, signMessage } from "@/lib/keys";
+import { anchorHash, generateKeypair, signMessage } from "@/lib/keys";
 import { sendMemoTx } from "@/lib/solana";
 import { buildSeed } from "@/lib/seed";
 import { PERSONA_PHOTOS, PERSONA_VERIFIED } from "@/lib/ui";
@@ -240,20 +240,9 @@ export default function Home() {
     setTimeout(() => setHighlightBlock(null), 2000);
   };
 
-  if (!ready || !identity) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <p className="vouch-pulse font-mono text-sm text-mute">
-          Loading chain{"\u2026"}
-        </p>
-      </div>
-    );
-  }
-
   // Auto-create demo identity if none exists -- skip onboarding gate
   useEffect(() => {
     if (ready && !identity) {
-      const { generateKeypair } = require("@/lib/keys");
       const kp = generateKeypair();
       const demoId: Identity = {
         name: "Demo User",
@@ -267,6 +256,16 @@ export default function Home() {
       } catch {}
     }
   }, [ready, identity]);
+
+  if (!ready || !identity) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <p className="vouch-pulse font-mono text-sm text-mute">
+          Loading chain{"\u2026"}
+        </p>
+      </div>
+    );
+  }
 
   const selected: ProfileSubject =
     selectedId === "me"
