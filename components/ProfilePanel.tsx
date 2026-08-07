@@ -27,10 +27,13 @@ export default function ProfilePanel({
   subject,
   chain,
   nameForKey,
+  onClickBlock,
 }: {
   subject: ProfileSubject;
   chain: Block[];
   nameForKey: (pub: string) => string | null;
+  /** Scroll the ChainLedger to a specific block index */
+  onClickBlock?: (index: number) => void;
 }) {
   const [copied, setCopied] = useState(false);
   const vouches = vouchesFor(chain, subject.pub);
@@ -151,6 +154,7 @@ export default function ProfilePanel({
                 key={b.index}
                 block={b}
                 counterpartyName={nameForKey((b.payload as VouchPayload).from)}
+                onClickBlock={onClickBlock}
               />
             ))}
           </div>

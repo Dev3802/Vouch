@@ -25,9 +25,12 @@ function timeAgo(ts: number): string {
 export default function VouchRow({
   block,
   counterpartyName,
+  onClickBlock,
 }: {
   block: Block;
   counterpartyName: string | null;
+  /** Optional: scroll the ChainLedger to this block index */
+  onClickBlock?: (index: number) => void;
 }) {
   const p = block.payload as VouchPayload;
   const delta = DELTAS[p.attestation];
@@ -39,8 +42,26 @@ export default function VouchRow({
       ? "both signed \u00d71.5"
       : "one side signed";
 
+  const tooltip = `Block #${block.index} \u00b7 ${block.hash.slice(0, 16)}\u2026\nClick to locate in chain`;
+
   return (
-    <div className="vouch-pop flex items-center gap-3 rounded-xl border border-edge bg-panel px-3 py-2.5 shadow-sm">
+    <div
+      role={onClickBlock ? "button" : undefined}
+      tabIndex={onClickBlock ? 0 : undefined}
+      title={tooltip}
+      onClick={() => onClickBlock?.(block.index)}
+      onKeyDown={(e) => {
+        if (onClickBlock && (e.key === "Enter" || e.key === " ")) {
+          e.preventDefault();
+          onClickBlock(block.index);
+        }
+      }}
+      className={`vouch-pop flex items-center gap-3 rounded-xl border border-edge bg-panel px-3 py-2.5 shadow-sm transition-colors ${
+        onClickBlock
+          ? "cursor-pointer hover:border-signal/30 hover:bg-panel2/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-signal"
+          : ""
+      }`}
+    >
       <span
         className={`shrink-0 rounded-full border px-2.5 py-0.5 text-[11px] font-medium ${BADGE_STYLES[p.attestation]}`}
       >

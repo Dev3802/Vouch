@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { verifyChain } from "@/lib/chain";
 import { shortKey } from "@/lib/keys";
 import { ATTESTATION_LABELS } from "@/lib/score";
@@ -19,15 +19,31 @@ export default function ChainLedger({
   nameForKey,
   onTamper,
   onReset,
+  highlightIndex,
 }: {
   chain: Block[];
   nameForKey: (pub: string) => string | null;
   onTamper: (index: number, attestation: AttestationType) => void;
   onReset: () => void;
+  /** Block index to scroll into view and briefly highlight */
+  highlightIndex?: number | null;
 }) {
   const [editing, setEditing] = useState<number | null>(null);
   const status = useMemo(() => verifyChain(chain), [chain]);
   const reversed = useMemo(() => [...chain].reverse(), [chain]);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to the highlighted block whenever highlightIndex changes
+  useMemo(() => {
+    if (highlightIndex == null || !scrollRef.current) return;
+    const el = scrollRef.current.querySelector(
+      `[data-block-index="${highlightIndex}"]`
+    ) as HTMLElement | null;
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [highlightIndex]);
 
   return (
     <section className="flex h-full flex-col overflow-hidden rounded-2xl border border-edge bg-panel shadow-sm">
@@ -57,7 +73,7 @@ export default function ChainLedger({
         )}
       </header>
 
-      <div className="flex-1 overflow-y-auto p-3">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-3">
         <div className="space-y-0">
           {reversed.map((b, pos) => {
             const bad = status.badFlags[b.index];
@@ -66,13 +82,14 @@ export default function ChainLedger({
                 ? (b.index - status.firstBadIndex) * 40
                 : 0;
             return (
-              <div key={b.index}>
+              <div key={b.index} data-block-index={b.index}>
                 <BlockCard
                   block={b}
                   bad={bad}
                   delayMs={cascade}
                   nameForKey={nameForKey}
                   editing={editing === b.index}
+                  highlighted={highlightIndex === b.index}
                   onEdit={() =>
                     setEditing(editing === b.index ? null : b.index)
                   }
@@ -107,6 +124,7 @@ function BlockCard({
   delayMs,
   nameForKey,
   editing,
+  highlighted,
   onEdit,
   onTamper,
 }: {
@@ -115,6 +133,7 @@ function BlockCard({
   delayMs: number;
   nameForKey: (pub: string) => string | null;
   editing: boolean;
+  highlighted: boolean;
   onEdit: () => void;
   onTamper: (att: AttestationType) => void;
 }) {
@@ -131,7 +150,9 @@ function BlockCard({
       className={`rounded-xl border px-3 py-2 transition-colors duration-300 ${
         bad
           ? "border-danger/50 bg-danger/10"
-          : "border-edge bg-panel2/60"
+          : highlighted
+            ? "border-signal/50 bg-signal/8 ring-1 ring-signal/30"
+            : "border-edge bg-panel2/60"
       }`}
       style={{ transitionDelay: `${delayMs}ms` }}
     >

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 import AttestationModal from "@/components/AttestationModal";
 import ChainLedger from "@/components/ChainLedger";
+import FAQPanel from "@/components/FAQPanel";
 import IdentitySetup from "@/components/IdentitySetup";
 import MatchDeck from "@/components/MatchDeck";
 import ProfilePanel, { type ProfileSubject } from "@/components/ProfilePanel";
@@ -40,6 +41,7 @@ export default function Home() {
   const [attesting, setAttesting] = useState<DateObj | null>(null);
   const [confirmReset, setConfirmReset] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [highlightBlock, setHighlightBlock] = useState<number | null>(null);
   // last known-good chain; tampering only ever mutates React state, never this
   const pristineRef = useRef<Block[]>([]);
 
@@ -214,6 +216,30 @@ export default function Home() {
     setSelectedId("p0");
   };
 
+  const resetDemo = () => {
+    const seed = buildSeed();
+    setPersonas(seed.personas);
+    setChain(seed.chain);
+    pristineRef.current = seed.chain;
+    setDates([]);
+    setSwiped(new Set());
+    setSelectedId("p0");
+    setHighlightBlock(null);
+    try {
+      localStorage.setItem(LS_CHAIN, JSON.stringify(seed.chain));
+      localStorage.setItem(LS_PERSONAS, JSON.stringify(seed.personas));
+    } catch {
+      // ignore
+    }
+    showToast("Demo restored to seed state.");
+  };
+
+  const handleClickBlock = (index: number) => {
+    setHighlightBlock(index);
+    // Clear highlight after a moment so it can re-trigger if clicked again
+    setTimeout(() => setHighlightBlock(null), 2000);
+  };
+
   if (!ready) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -270,6 +296,7 @@ export default function Home() {
         chain={chain}
         onShowMe={() => setSelectedId("me")}
         onResetIdentity={() => setConfirmReset(true)}
+        onResetDemo={resetDemo}
       />
 
       <main className="grid min-h-0 flex-1 grid-cols-[3fr_4fr_3fr] gap-3 p-3">
@@ -284,14 +311,24 @@ export default function Home() {
           onAdvance={handleAdvance}
           onAttest={(d) => setAttesting(d)}
         />
-        <ProfilePanel subject={selected} chain={chain} nameForKey={nameForKey} />
+        <ProfilePanel
+          subject={selected}
+          chain={chain}
+          nameForKey={nameForKey}
+          onClickBlock={handleClickBlock}
+        />
         <ChainLedger
           chain={chain}
           nameForKey={nameForKey}
           onTamper={handleTamper}
           onReset={handleReset}
+          highlightIndex={highlightBlock}
         />
       </main>
+
+      <div className="overflow-y-auto px-3 pb-6">
+        <FAQPanel />
+      </div>
 
       {attesting && (
         <AttestationModal
