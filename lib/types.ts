@@ -13,7 +13,14 @@ export interface GenesisPayload {
   note: string;
 }
 
-export type BlockPayload = VouchPayload | GenesisPayload;
+/** Phone-anchored identity registration — unique ID on the chain. */
+export interface IdentityPayload {
+  kind: "identity";
+  pub: string;
+  anchor: string;
+}
+
+export type BlockPayload = VouchPayload | GenesisPayload | IdentityPayload;
 
 export interface Block {
   index: number;

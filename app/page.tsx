@@ -10,7 +10,7 @@ import MatchDeck from "@/components/MatchDeck";
 import ProfilePanel, { type ProfileSubject } from "@/components/ProfilePanel";
 import TopBar from "@/components/TopBar";
 import { appendBlock, payloadMessage } from "@/lib/chain";
-import { anchorHash, generateKeypair, signMessage } from "@/lib/keys";
+import { anchorHash, signMessage } from "@/lib/keys";
 import { sendMemoTx } from "@/lib/solana";
 import { buildSeed } from "@/lib/seed";
 import { PERSONA_PHOTOS, PERSONA_VERIFIED } from "@/lib/ui";
@@ -23,9 +23,9 @@ import type {
   VouchPayload,
 } from "@/lib/types";
 
-const LS_IDENTITY = "vouch.identity.v1";
+const LS_IDENTITY = "vouch.identity.v2";
 // v3: persona shape changed (no emoji, new gradient palette)
-const LS_CHAIN = "vouch.chain.v3";
+const LS_CHAIN = "vouch.chain.v4";
 const LS_PERSONAS = "vouch.personas.v3";
 
 export default function Home() {
@@ -40,7 +40,6 @@ export default function Home() {
   const [selectedId, setSelectedId] = useState<string>("p0"); // start on Marcus for the demo
   const [attesting, setAttesting] = useState<DateObj | null>(null);
   const [confirmReset, setConfirmReset] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [highlightBlock, setHighlightBlock] = useState<number | null>(null);
   // last known-good chain; tampering only ever mutates React state, never this
@@ -215,7 +214,6 @@ export default function Home() {
     setDates([]);
     setSwiped(new Set());
     setSelectedId("p0");
-    setShowOnboarding(true);
   };
 
   const resetDemo = () => {
@@ -242,26 +240,6 @@ export default function Home() {
     setTimeout(() => setHighlightBlock(null), 2000);
   };
 
-  // Auto-create a demo identity on first load so the match deck is immediate.
-  // "Start fresh" sets showOnboarding and uses IdentitySetup instead.
-  useEffect(() => {
-    if (ready && !identity && !showOnboarding) {
-      const kp = generateKeypair();
-      const demoId: Identity = {
-        name: "Demo User",
-        gradient: "from-blue-400 to-indigo-600",
-        pub: kp.pub,
-        priv: kp.priv,
-      };
-      setIdentity(demoId);
-      try {
-        localStorage.setItem(LS_IDENTITY, JSON.stringify(demoId));
-      } catch {
-        // ignore
-      }
-    }
-  }, [ready, identity, showOnboarding]);
-
   if (!ready) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -272,28 +250,25 @@ export default function Home() {
     );
   }
 
-  if (showOnboarding || !identity) {
-    if (showOnboarding) {
-      return (
-        <IdentitySetup
-          onCreate={(id) => {
-            setIdentity(id);
-            setShowOnboarding(false);
-            try {
-              localStorage.setItem(LS_IDENTITY, JSON.stringify(id));
-            } catch {
-              // ignore
-            }
-          }}
-        />
-      );
-    }
+  // One linear flow: phone → chain ID → questions → Match / Profile / Chain
+  if (!identity) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <p className="vouch-pulse font-mono text-sm text-mute">
-          Loading chain{"\u2026"}
-        </p>
-      </div>
+      <IdentitySetup
+        chain={chain}
+        onComplete={(id, nextChain) => {
+          setIdentity(id);
+          setChain(nextChain);
+          pristineRef.current = nextChain;
+          setSelectedId("me");
+          try {
+            localStorage.setItem(LS_IDENTITY, JSON.stringify(id));
+            localStorage.setItem(LS_CHAIN, JSON.stringify(nextChain));
+          } catch {
+            // ignore
+          }
+          showToast("Identity block written. You\u2019re on the chain.");
+        }}
+      />
     );
   }
 

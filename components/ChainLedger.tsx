@@ -140,9 +140,11 @@ function BlockCard({
   const summary =
     p.kind === "genesis"
       ? p.note
-      : `${nameForKey(p.from) ?? shortKey(p.from)} \u2192 ${
-          ATTESTATION_LABELS[p.attestation]
-        } \u2192 ${nameForKey(p.to) ?? shortKey(p.to)}`;
+      : p.kind === "identity"
+        ? `Identity registered \u00b7 ${nameForKey(p.pub) ?? shortKey(p.pub)} \u00b7 anchor ${shortKey(p.anchor)}`
+        : `${nameForKey(p.from) ?? shortKey(p.from)} \u2192 ${
+            ATTESTATION_LABELS[p.attestation]
+          } \u2192 ${nameForKey(p.to) ?? shortKey(p.to)}`;
 
   return (
     <div
@@ -199,6 +201,19 @@ function BlockCard({
           <p className="truncate">
             sig <span className="text-ink/60">{shortKey(block.signature, 12)}</span>
           </p>
+        )}
+        {p.kind === "identity" && (
+          <>
+            <p className="truncate">
+              pub <span className="text-ink/60">{shortKey(p.pub, 12)}</span>
+            </p>
+            <p className="truncate">
+              anchor <span className="text-signal/80">{shortKey(p.anchor, 12)}</span>
+            </p>
+            <p className="truncate">
+              sig <span className="text-ink/60">{shortKey(block.signature, 12)}</span>
+            </p>
+          </>
         )}
         <p className="truncate">
           prev{" "}
