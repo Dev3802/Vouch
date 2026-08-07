@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { verifyChain } from "@/lib/chain";
 import { shortKey } from "@/lib/keys";
 import { ATTESTATION_LABELS } from "@/lib/score";
+import { getExplorerUrl } from "@/lib/solana";
 import type { AttestationType, Block } from "@/lib/types";
 
 const ATT_TYPES: AttestationType[] = [
@@ -191,6 +192,16 @@ function BlockCard({
             {shortKey(block.hash, 12)}
           </span>
         </p>
+        {block.solanaTxSig && (
+          <a
+            href={getExplorerUrl(block.solanaTxSig)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-0.5 block font-sans text-[10px] font-medium text-signal hover:underline"
+          >
+            on solana
+          </a>
+        )}
       </div>
     </div>
   );

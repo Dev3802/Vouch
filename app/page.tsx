@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 import AttestationModal from "@/components/AttestationModal";
 import ChainLedger from "@/components/ChainLedger";
 import IdentitySetup from "@/components/IdentitySetup";
@@ -9,6 +10,7 @@ import ProfilePanel, { type ProfileSubject } from "@/components/ProfilePanel";
 import TopBar from "@/components/TopBar";
 import { appendBlock, payloadMessage } from "@/lib/chain";
 import { anchorHash, signMessage } from "@/lib/keys";
+import { sendMemoTx } from "@/lib/solana";
 import { buildSeed } from "@/lib/seed";
 import { PERSONA_PHOTOS, PERSONA_VERIFIED } from "@/lib/ui";
 import type {
@@ -26,6 +28,8 @@ const LS_CHAIN = "vouch.chain.v3";
 const LS_PERSONAS = "vouch.personas.v3";
 
 export default function Home() {
+  const { publicKey, signTransaction, connected } = useWallet();
+  const { connection } = useConnection();
   const [ready, setReady] = useState(false);
   const [identity, setIdentity] = useState<Identity | null>(null);
   const [personas, setPersonas] = useState<Persona[]>([]);
@@ -122,10 +126,10 @@ export default function Home() {
     );
   };
 
-  const commitAttestation = (
+  const commitAttestation = async (
     date: DateObj,
     att: AttestationType
-  ): { signature: string; counterSignature?: string; blockIndex: number } => {
+  ): Promise<{ signature: string; counterSignature?: string; blockIndex: number; solanaTxSig?: string }> => {
     const persona = personasById[date.personaId];
     const me = identity!;
     const negative = att === "no_show" || att === "ghosted";
@@ -158,13 +162,27 @@ export default function Home() {
       next = appendBlock(next, back, signMessage(payloadMessage(back), persona.priv));
     }
 
+    // Attempt Solana memo tx -- best-effort, never blocks the local commit
+    let solanaTxSig: string | undefined;
+    if (connected && publicKey && signTransaction) {
+      try {
+        solanaTxSig = await sendMemoTx(connection, publicKey, signTransaction, payload);
+        // Store tx sig on the attested block
+        next = next.map((b, i) =>
+          i === blockIndex ? { ...b, solanaTxSig } : b
+        );
+      } catch {
+        // Solana tx failed -- attestation still committed locally
+      }
+    }
+
     setChain(next);
     persistChain(next);
     setDates((ds) =>
       ds.map((x) => (x.id === date.id ? { ...x, state: "attested" } : x))
     );
     setSelectedId(date.personaId);
-    return { signature, counterSignature, blockIndex };
+    return { signature, counterSignature, blockIndex, solanaTxSig };
   };
 
   const handleTamper = (index: number, att: AttestationType) => {

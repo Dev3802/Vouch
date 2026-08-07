@@ -22,6 +22,7 @@ export interface Block {
   signature: string;
   prevHash: string;
   hash: string;
+  solanaTxSig?: string;
 }
 
 export interface Persona {

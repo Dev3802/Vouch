@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { shortKey } from "@/lib/keys";
 import { ATTESTATION_LABELS, DELTAS } from "@/lib/score";
+import { getExplorerUrl } from "@/lib/solana";
 import type { AttestationType, Persona } from "@/lib/types";
 
 const OPTIONS: { type: AttestationType; desc: string }[] = [
@@ -16,6 +17,7 @@ export interface SignResult {
   signature: string;
   counterSignature?: string;
   blockIndex: number;
+  solanaTxSig?: string;
 }
 
 const isNegative = (t: AttestationType) => t === "no_show" || t === "ghosted";
@@ -27,7 +29,7 @@ export default function AttestationModal({
 }: {
   persona: Persona;
   onClose: () => void;
-  onSign: (att: AttestationType) => SignResult;
+  onSign: (att: AttestationType) => Promise<SignResult>;
 }) {
   const [choice, setChoice] = useState<AttestationType | null>(null);
   const [result, setResult] = useState<SignResult | null>(null);
@@ -39,10 +41,13 @@ export default function AttestationModal({
     if (!choice) return;
     setSigning(true);
     // small delay so the signing moment reads on stage
+    const delay = negative ? 1100 : 600;
     setTimeout(() => {
-      setResult(onSign(choice));
-      setSigning(false);
-    }, negative ? 1100 : 600);
+      onSign(choice).then((r) => {
+        setResult(r);
+        setSigning(false);
+      });
+    }, delay);
   };
 
   return (
@@ -153,6 +158,20 @@ export default function AttestationModal({
                     {shortKey(result.counterSignature, 32)}
                   </p>
                 </>
+              )}
+            </div>
+            <div className="mt-3 text-[11px]">
+              {result.solanaTxSig ? (
+                <a
+                  href={getExplorerUrl(result.solanaTxSig)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium text-signal hover:underline"
+                >
+                  Recorded on Solana devnet
+                </a>
+              ) : (
+                <span className="text-mute">Local only &mdash; wallet not connected</span>
               )}
             </div>
             <div className="mt-4 flex justify-end">
