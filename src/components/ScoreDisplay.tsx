@@ -15,6 +15,7 @@ export function ScoreDisplay({ score, vouchCount, label }: ScoreDisplayProps) {
       {label && <p className="text-xs text-zinc-500 uppercase tracking-wider mb-1">{label}</p>}
       <p className={`text-4xl font-bold ${color}`}>{score}</p>
       <p className="text-sm text-zinc-400 mt-1">{vouchCount} vouch{vouchCount !== 1 ? 'es' : ''}</p>
+      <p className="text-[10px] text-zinc-600 mt-2">v2: prove score above threshold without revealing history (ZK proofs)</p>
     </div>
   );
 }

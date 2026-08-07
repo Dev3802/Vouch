@@ -64,7 +64,7 @@ export function AttestationModal({ dateObj, currentUserKey, counterpartyName, on
         <h2 className="text-lg font-semibold mb-1">Sign Attestation</h2>
         <p className="text-sm text-zinc-400 mb-4">How was your date with {counterpartyName}?</p>
 
-        <div className="grid grid-cols-2 gap-2 mb-4">
+        <div className="grid grid-cols-2 gap-2 mb-2">
           {ATTESTATION_OPTIONS.map(opt => (
             <button
               key={opt.type}
@@ -81,6 +81,8 @@ export function AttestationModal({ dateObj, currentUserKey, counterpartyName, on
             </button>
           ))}
         </div>
+
+        <p className="text-[10px] text-zinc-600 mb-3">Four options. No free text. Nothing to weaponize.</p>
 
         {error && <p className="text-xs text-amber-400 mb-3">{error}</p>}
 

@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Block } from '@/lib/types';
 import { deriveScore, getVouchCount, getVouchesFor } from '@/lib/scoring';
 import { getExplorerUrl } from '@/lib/solana';
@@ -17,6 +18,7 @@ export function ProfilePanel({ name, pubkey, bio, avatar, chain }: ProfilePanelP
   const score = deriveScore(chain, pubkey);
   const vouchCount = getVouchCount(chain, pubkey);
   const vouches = getVouchesFor(chain, pubkey);
+  const [showNames, setShowNames] = useState(true);
 
   const typeColors: Record<string, string> = {
     endorsed: 'text-emerald-400',
@@ -42,7 +44,18 @@ export function ProfilePanel({ name, pubkey, bio, avatar, chain }: ProfilePanelP
       <ScoreDisplay score={score} vouchCount={vouchCount} label="Reputation Score" />
 
       <div className="mt-4">
-        <h3 className="text-sm font-semibold text-zinc-300 mb-2">Vouch History</h3>
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-zinc-300">Signed History</h3>
+            <span className="px-2 py-0.5 rounded-full bg-zinc-800 text-[10px] text-zinc-500">pseudonymous -- keys only, no names</span>
+          </div>
+          <button
+            onClick={() => setShowNames(!showNames)}
+            className="text-[10px] px-2 py-0.5 rounded-full border border-zinc-700 text-zinc-500 hover:text-zinc-300 transition-colors"
+          >
+            {showNames ? 'Production view' : 'Demo labels'}
+          </button>
+        </div>
         {vouches.length === 0 ? (
           <p className="text-sm text-zinc-500 italic">No vouches. This account is new or was recently reset.</p>
         ) : (
