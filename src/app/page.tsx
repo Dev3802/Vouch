@@ -7,6 +7,7 @@ import { ProfilePanel } from '@/components/ProfilePanel';
 import { MatchPanel } from '@/components/MatchPanel';
 import { AttestationModal } from '@/components/AttestationModal';
 import { ChainPanel } from '@/components/ChainPanel';
+import { FAQPanel } from '@/components/FAQPanel';
 import { PERSONAS, getPersona } from '@/lib/seed';
 import { appendBlock } from '@/lib/chain';
 import { Attestation, DateObj, Block } from '@/lib/types';
@@ -45,7 +46,7 @@ export default function Home() {
     <main className="min-h-screen p-4 md:p-6 max-w-7xl mx-auto">
       <header className="flex items-center justify-between mb-6 pb-4 border-b border-zinc-800">
         <div>
-          <h1 className="text-2xl font-bold">Vouch</h1>
+          <h1 className="text-2xl font-bold">Vouch<span className="ml-3 px-2 py-0.5 rounded text-xs bg-purple-500/20 text-purple-400 font-mono">solana devnet</span></h1>
           <p className="text-sm text-zinc-500">Dating reputation you can&apos;t reset</p>
         </div>
         <WalletConnect />
@@ -94,6 +95,8 @@ export default function Home() {
           />
         </div>
       </div>
+
+      <FAQPanel />
 
       {pendingDate && (
         <AttestationModal
