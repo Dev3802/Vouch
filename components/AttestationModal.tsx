@@ -96,6 +96,8 @@ export default function AttestationModal({
               })}
             </div>
 
+            <p className="mt-2 text-[10px] text-mute/70">Four options. No free text. Nothing to weaponize.</p>
+
             {negative && (
               <div className="vouch-pop mt-3 rounded-xl border border-warn/25 bg-warn/5 p-3">
                 <p className="text-xs font-medium text-warn">

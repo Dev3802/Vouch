@@ -137,9 +137,12 @@ export default function ProfilePanel({
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 pb-4">
-        <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-mute">
-          Signed history
-        </p>
+        <div className="flex items-center gap-2 mb-2">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-mute">
+            Signed history
+          </p>
+          <span className="rounded-full border border-edge bg-panel2 px-2 py-0.5 text-[9px] text-mute">pseudonymous -- keys only, no names</span>
+        </div>
         {vouches.length === 0 ? (
           <div className="rounded-xl border border-dashed border-edge bg-panel2/50 px-4 py-8 text-center">
             <p className="text-sm font-medium text-ink">No vouches.</p>

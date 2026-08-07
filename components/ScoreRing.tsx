@@ -65,9 +65,12 @@ export default function ScoreRing({
           {tone === "unknown" ? "\u2014" : score}
         </span>
         {size >= 80 && (
-          <span className="mt-1 text-[10px] uppercase tracking-wider text-mute">
-            score
-          </span>
+          <>
+            <span className="mt-1 text-[10px] uppercase tracking-wider text-mute">
+              score
+            </span>
+            <span className="mt-0.5 text-[8px] text-mute/60">ZK provable in v2</span>
+          </>
         )}
       </div>
     </div>
