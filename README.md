@@ -2,42 +2,27 @@
 
 **Dating reputation you can't reset.**
 
-Vouch gives each person a portable, signed history of how they actually behave on dates. After a date, both people sign a short attestation. Those attestations are appended to a public chain and become part of a profile that no platform owns and no delete button erases.
+A portable, signed history of how you actually behave on dates. After a date, both people sign a short attestation. Attestations are appended to a local hash chain and become part of a profile no platform owns and no delete button erases.
 
-A fresh account has no vouches. That absence is the signal.
-
-## Why
-
-Every dating app has the same hole: a bad actor gets reported, deletes the account, and is back in ten minutes with a new one. Reputation lives inside the platform, so it dies with the account. Vouch closes that hole.
-
-## How it works
-
-1. **Identity is a key** -- your profile belongs to a keypair generated on your device
-2. **Every vouch is countersigned** -- a vouch is only valid if the counterparty's key signed it
-3. **Score is derived, never stored** -- anyone can recompute the number from the chain
-4. **An empty profile is the signal** -- starting over costs you everything you built
-
-## Stack
-
-- Next.js + Tailwind
-- `@noble/secp256k1` for keys and signing
-- SHA-256 for block hashing
-- State in localStorage + seed data
-- No backend, no RPC, no wallet extension
-
-## Documentation
-
-- [Product Requirements (PRD)](docs/PRD.md)
-- [Risk Register](docs/RISK-REGISTER.md)
-- [Pitch Deck Summary](docs/PITCH.md)
-
-## Getting started
+## Run it
 
 ```bash
 npm install
 npm run dev
 ```
 
-## License
+Open [http://localhost:3000](http://localhost:3000).
 
-MIT
+## What's inside
+
+- **Identity** — the browser generates a secp256k1 keypair on first load. That is the account. No email, no password. Keys are issued one per sybil-resistant anchor — a salted phone hash in v1 (verification stubbed in the demo) — so deleting a key does not buy a free fresh start.
+- **Match deck** — card stack of seed personas; liking always matches, which creates a date with a `proposed → confirmed → completed` state machine.
+- **Attestations** — after a date completes, both parties are prompted at the same moment to sign one of: showed up (+5), endorsed (+10), no-show (−20), ghosted after (−10). Signed with your local key. Negative attestations require both keys or they never commit — nobody can write a permanent accusation alone (positives stay one-sided). Unsigned completed dates read as gaps, never as neutral.
+- **Score** — starts at 50, derived on read from the chain, never stored. Both sides signing weights the vouch ×1.5.
+- **Chain ledger** — every block with its signature, prev-hash link and hash. Hit **tamper** on any block and watch the chain break red downstream. **Reset** restores the honest copy.
+
+## Stack
+
+Next.js + Tailwind, one page with three panels. `@noble/secp256k1` for keys and signing, SHA-256 (`@noble/hashes`) for block hashing. State in `localStorage` plus generated seed data. No backend, no RPC, no wallet extension.
+
+It is a local chain — deploying to Base is the next step.
