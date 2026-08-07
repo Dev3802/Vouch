@@ -1,6 +1,6 @@
 'use client';
 
-import { FC, ReactNode, useMemo } from 'react';
+import { ReactNode, useMemo } from 'react';
 import { ConnectionProvider, WalletProvider as SolanaWalletProvider } from '@solana/wallet-adapter-react';
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
 import { PhantomWalletAdapter, SolflareWalletAdapter } from '@solana/wallet-adapter-wallets';
@@ -9,7 +9,7 @@ import '@solana/wallet-adapter-react-ui/styles.css';
 
 const QUICKNODE_RPC = 'https://blissful-radial-county.solana-devnet.quiknode.pro/6e0fc64d24644a330fd09365a4424d9503a38dff/';
 
-export const WalletContextProvider: FC<{ children: ReactNode }> = ({ children }) => {
+export function WalletContextProvider({ children }: { children: ReactNode }) {
   const wallets = useMemo(() => [
     new PhantomWalletAdapter(),
     new SolflareWalletAdapter(),
@@ -24,4 +24,4 @@ export const WalletContextProvider: FC<{ children: ReactNode }> = ({ children })
       </SolanaWalletProvider>
     </ConnectionProvider>
   );
-};
+}
